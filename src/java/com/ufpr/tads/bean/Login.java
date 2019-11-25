@@ -1,30 +1,41 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.ufpr.tads.bean;
 
 import java.io.Serializable;
 
-/**
- *
- * @author Gabriel
- */
 public class Login implements Serializable {
 	
 	private int usuario;
 	private int votou;
+	private int token;
 	private String senha;
 	private String nome;
 	private String filme;
 	private String diretor;
+
+	public Login(){
+		super();
+	}
 	
-	public Login(){}
+	public Login(String nome){
+		super();
+		this.nome = nome;
+	}
 	
 	public Login(String nome, String senha){
+		super();
 		this.nome = nome;
 		this.senha = senha;
+	}
+
+	public Login(int usuario, int votou, int token, String senha, String nome, String filme, String diretor) {
+		super();
+		this.usuario = usuario;
+		this.votou = votou;
+		this.token = token;
+		this.senha = senha;
+		this.nome = nome;
+		this.filme = filme;
+		this.diretor = diretor;
 	}
 
 	public int getUsuario() {
@@ -74,10 +85,13 @@ public class Login implements Serializable {
 	public void setDiretor(String diretor) {
 		this.diretor = diretor;
 	}
+	
+	public int getToken() {
+		return token;
+	}
 
+	public void setToken(int token) {
+		this.token = token;
+	}
 
-	
-	
-	
-	
 }
