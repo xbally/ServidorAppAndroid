@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.ufpr.tads.dao;
 
 
@@ -10,51 +5,58 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-
 import java.sql.PreparedStatement;
 import java.sql.Connection;
+
 import com.ufpr.tads.bd.ConnectionFactory;
 import com.ufpr.tads.bean.Login;
-/**
- *
- * @author Gabriel
- */
 public class UserDao {
 	
-	private final String stmtGetLogin = "SELECT * FROM usuario WHERE nome=?";
+	private final String stmtGetLogin = "SELECT * FROM usuario WHERE nome=? AND senha=?";
 	private final String stmtConfirmaVotoBD = "UPDATE usuario SET filme=?, diretor=?, votou=? WHERE nome=?";
 	private final String stmtCheckVoto = "SELECT votou FROM usuario WHERE nome=?";
 	
-	public Login getLogin(Login login) throws SQLException, UnsupportedEncodingException, NoSuchAlgorithmException{
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Login feito = new Login();
-        try {
-            con = new ConnectionFactory().getConnection();
-            stmt = (PreparedStatement) con.prepareStatement(stmtGetLogin);
-            stmt.setString(1, login.getNome());
-            rs = stmt.executeQuery();
-            while(rs.next()){
-	            if ((login.getSenha().equals(rs.getString("senha"))) && (login.getNome().equals(rs.getString("nome")))){
-	                feito.setNome(rs.getString("nome"));
-	                feito.setSenha(rs.getString("senha"));
+	public Login getLogin(Login login) throws SQLException, UnsupportedEncodingException, NoSuchAlgorithmException {
+		updateUserToken(login.getUsuario(), (int)Math.random()*101);
+		Login usuarioRetornado = getUserByLoginAndPassword(login.getNome(), login.getSenha());
+		if(usuarioRetornado == null) {
+			usuarioRetornado = new Login("Inexistente");
+		}
+        return usuarioRetornado;
+    }
 
-	            }
-	            return feito;//se houver o usuario e senha na DB retorna os mesmos...
-            }
-            //Caso nao exista o usuario e senha na DB setamos um retorno dizendo "Inexistente"
-            feito.setNome("Inexistente");
-            feito.setSenha("Inexistente");
-            return feito;
-        } catch (SQLException ex) {
-            throw new RuntimeException("Erro ao consultar cadastro de usuario. Origem="+ex.getMessage());
-        }finally{
-            try{rs.close();}catch(Exception ex){System.out.println("Erro ao fechar result set. Ex="+ex.getMessage());};
-            try{stmt.close();}catch(Exception ex){System.out.println("Erro ao fechar stmt. Ex="+ex.getMessage());};
-            try{con.close();;}catch(Exception ex){System.out.println("Erro ao fechar conex√£o. Ex="+ex.getMessage());};               
-        }
+	public Login getUserByLoginAndPassword(String login, String password) throws SQLException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        String sql = "SELECT usuario, votou, token, senha, nome, voto_filme, voto_diretor from users where login=? and password=?;";
+		try(Connection conn = ConnectionFactory.getConnection()) {
+	        PreparedStatement stmt = conn.prepareStatement(sql);
+	        stmt.setString(1,login);
+	        stmt.setString(2,password);
+	
+	        try(ResultSet res = stmt.executeQuery()) {
+		        if(res.next()) {
+		        	Login user = new Login(res.getInt("usuario"), res.getInt("votou"), res.getInt("token"), res.getString("senha")
+		        			, res.getString("nome"), res.getString("voto_filme"), res.getString("voto_diretor"));
+		        	return user;
+		        }
+	        }
+		} catch (Exception e) {
+			throw new RuntimeException("Erro ao consultar cadastro de usuario. Origem="+e.getMessage());
+		}
+	
+        return null;
+    }
+	
+    public void updateUserToken(int id, int token)  throws SQLException {
+        String sql = "update users set token=? where usuario=?;";
+        try(Connection conn = ConnectionFactory.getConnection()) {
+	        PreparedStatement stmt = conn.prepareStatement(sql);
+	        stmt.setString(1, String.valueOf(token));
+	        stmt.setString(2, String.valueOf(id));
+	
+	        stmt.executeUpdate();
+        } catch (Exception e) {
+        	throw new RuntimeException("Erro ao gerar Token de usu·rio. Origem="+e.getMessage());
+		}
     }
 	
 	public Login confirmaVoto(Login confirmaVoto) throws SQLException, NoSuchAlgorithmException, UnsupportedEncodingException {
