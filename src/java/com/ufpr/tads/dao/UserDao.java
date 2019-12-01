@@ -17,7 +17,7 @@ public class UserDao {
 	private final String stmtCheckVoto = "SELECT votou FROM usuario WHERE nome=?";
 	
 	public Login getLogin(Login login) throws SQLException, UnsupportedEncodingException, NoSuchAlgorithmException {
-		updateUserToken(login.getUsuario(), (int)Math.random()*101);
+		updateUserToken(login, (int)Math.random()*101);
 		Login usuarioRetornado = getUserByLoginAndPassword(login.getNome(), login.getSenha());
 		if(usuarioRetornado == null) {
 			usuarioRetornado = new Login("Inexistente");
@@ -46,12 +46,15 @@ public class UserDao {
         return null;
     }
 	
-    public void updateUserToken(int id, int token)  throws SQLException {
-        String sql = "update users set token=? where usuario=?;";
+    public void updateUserToken(Login usuario, int token)  throws SQLException {
+    	String login = usuario.getNome();
+    	String senha = usuario.getSenha();
+        String sql = "UPDATE users SET token=? WHERE nome=? AND senha=?;";
         try(Connection conn = ConnectionFactory.getConnection()) {
 	        PreparedStatement stmt = conn.prepareStatement(sql);
 	        stmt.setString(1, String.valueOf(token));
-	        stmt.setString(2, String.valueOf(id));
+	        stmt.setString(2, login);
+	        stmt.setString(3, senha);
 	
 	        stmt.executeUpdate();
         } catch (Exception e) {
