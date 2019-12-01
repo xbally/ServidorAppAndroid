@@ -53,7 +53,7 @@ public class UserDao {
         String sql = "UPDATE " + TABLE_USERS + " SET token=? WHERE nome=? AND senha=?;";
         try(Connection conn = ConnectionFactory.getConnection()) {
 	        PreparedStatement stmt = conn.prepareStatement(sql);
-	        stmt.setString(1, String.valueOf(token));
+	        stmt.setInt(1, token);
 	        stmt.setString(2, login);
 	        stmt.setString(3, senha);
 	
