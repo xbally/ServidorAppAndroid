@@ -12,12 +12,13 @@ import com.ufpr.tads.bd.ConnectionFactory;
 import com.ufpr.tads.bean.Login;
 public class UserDao {
 	
-	private final String stmtGetLogin = "SELECT * FROM usuario WHERE nome=? AND senha=?";
-	private final String stmtConfirmaVotoBD = "UPDATE usuario SET filme=?, diretor=?, votou=? WHERE nome=?";
-	private final String stmtCheckVoto = "SELECT votou FROM usuario WHERE nome=?";
+	private final String TABLE_USERS = "usuarios";
+	private final String stmtGetLogin = "SELECT * FROM " + TABLE_USERS + " WHERE nome=? AND senha=?";
+	private final String stmtConfirmaVotoBD = "UPDATE " + TABLE_USERS + " SET filme=?, diretor=?, votou=? WHERE nome=?";
+	private final String stmtCheckVoto = "SELECT votou FROM " + TABLE_USERS + " WHERE nome=?";
 	
 	public Login getLogin(Login login) throws SQLException, UnsupportedEncodingException, NoSuchAlgorithmException {
-		updateUserToken(login.getUsuario(), (int)Math.random()*101);
+		updateUserToken(login, (int)Math.random()*101);
 		Login usuarioRetornado = getUserByLoginAndPassword(login.getNome(), login.getSenha());
 		if(usuarioRetornado == null) {
 			usuarioRetornado = new Login("Inexistente");
@@ -26,7 +27,7 @@ public class UserDao {
     }
 
 	public Login getUserByLoginAndPassword(String login, String password) throws SQLException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        String sql = "SELECT usuario, votou, token, senha, nome, voto_filme, voto_diretor from users where login=? and password=?;";
+        String sql = "SELECT usuario, votou, token, senha, nome, voto_filme, voto_diretor from " + TABLE_USERS + " where login=? and password=?;";
 		try(Connection conn = ConnectionFactory.getConnection()) {
 	        PreparedStatement stmt = conn.prepareStatement(sql);
 	        stmt.setString(1,login);
@@ -46,12 +47,15 @@ public class UserDao {
         return null;
     }
 	
-    public void updateUserToken(int id, int token)  throws SQLException {
-        String sql = "update users set token=? where usuario=?;";
+    public void updateUserToken(Login usuario, int token)  throws SQLException {
+    	String login = usuario.getNome();
+    	String senha = usuario.getSenha();
+        String sql = "UPDATE " + TABLE_USERS + " SET token=? WHERE nome=? AND senha=?;";
         try(Connection conn = ConnectionFactory.getConnection()) {
 	        PreparedStatement stmt = conn.prepareStatement(sql);
 	        stmt.setString(1, String.valueOf(token));
-	        stmt.setString(2, String.valueOf(id));
+	        stmt.setString(2, login);
+	        stmt.setString(3, senha);
 	
 	        stmt.executeUpdate();
         } catch (Exception e) {
@@ -85,8 +89,6 @@ public class UserDao {
             try{stmt.close();}catch(Exception ex){ex.printStackTrace();  System.out.println("Erro ao fechar stmt. Ex="+ex.getMessage());};
             try{con.close();;}catch(Exception ex){ex.printStackTrace();  System.out.println("Erro ao fechar conex√£o. Ex="+ex.getMessage());};
         }
-        
-        
 	}
 
 	public int checkVoto(Login login) throws SQLException, NoSuchAlgorithmException, UnsupportedEncodingException {
@@ -114,4 +116,21 @@ public class UserDao {
         }
 	}
 	
+	public Integer checkToken(String nome) {
+        String sql = "SELECT token FROM " + TABLE_USERS + " WHERE nome=?";
+        try(Connection conn = ConnectionFactory.getConnection()) {
+	        PreparedStatement stmt = conn.prepareStatement(sql);
+	        stmt.setString(1, nome);
+	
+	        try(ResultSet res = stmt.executeQuery()) {
+		        if(res.next()) {
+		        	Integer token = res.getInt("token");
+		        	return token;
+		        }
+	        }
+	        return null;
+        } catch (Exception e) {
+        	throw new RuntimeException("Erro ao recuperar Token de usu·rio. Origem="+e.getMessage());
+		}
+	}
 }

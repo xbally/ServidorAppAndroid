@@ -60,7 +60,8 @@ public class ConfirmaVoto extends HttpServlet {
 		String nome = request.getParameter("nome");
 		String filme = request.getParameter("filme");
 		String diretor = request.getParameter("diretor");
-		String msg;
+		String tokenStr = request.getParameter("token");
+		String msg = "";
 		
 		Login confirmaVotoBD = new Login();
 		confirmaVotoBD.setNome(nome);
@@ -70,10 +71,13 @@ public class ConfirmaVoto extends HttpServlet {
 		UserDao userdao;
 		userdao = new UserDao();
 		try {
+			Integer token = Integer.valueOf(tokenStr);
 			int checkVoto = userdao.checkVoto(confirmaVotoBD);
 			if(checkVoto == 1){
 				msg = "Usuario ja votou";
-			}else{
+			} else if(token != userdao.checkToken(nome)) {
+				msg = "Token incorreto";
+			} else {
 				Login confirmado = userdao.confirmaVoto(confirmaVotoBD);
 			
 				if(confirmado.getVotou() == 1){
