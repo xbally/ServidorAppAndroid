@@ -12,7 +12,7 @@ import com.ufpr.tads.bd.ConnectionFactory;
 import com.ufpr.tads.bean.Login;
 public class UserDao {
 	
-	private final String TABLE_USERS = "usuarios";
+	private final String TABLE_USERS = "usuario";
 	private final String stmtGetLogin = "SELECT * FROM " + TABLE_USERS + " WHERE nome=? AND senha=?";
 	private final String stmtConfirmaVotoBD = "UPDATE " + TABLE_USERS + " SET filme=?, diretor=?, votou=? WHERE nome=?";
 	private final String stmtCheckVoto = "SELECT votou FROM " + TABLE_USERS + " WHERE nome=?";
