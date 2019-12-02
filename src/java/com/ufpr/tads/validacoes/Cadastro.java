@@ -16,11 +16,12 @@ import com.ufpr.tads.bean.Login;
 import com.ufpr.tads.dao.UserDao;
 
 import net.sf.json.JSONObject;
-@WebServlet("/UserValidator")
-public class UserValidator extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-       
-    public UserValidator() {
+
+@WebServlet("/Cadastro")
+public class Cadastro extends HttpServlet {
+	private static final long serialVersionUID = -3167223651212632418L;
+
+	public Cadastro() {
         super();
     }
 
@@ -29,35 +30,24 @@ public class UserValidator extends HttpServlet {
 		doPost(request, response);
 	}
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HashMap<String, String> hm = new HashMap<String, String>();
-		String login = request.getParameter("login");
+    	String login = request.getParameter("login");
 		String password = request.getParameter("senha");
 		String msg;
-		
-		Login loginBD = new Login();
-		loginBD.setNome(login);
-		loginBD.setSenha(password);
 		
 		UserDao userdao;
 		userdao = new UserDao();
 		try {
-			Login usuarioRetornado = userdao.getLogin(loginBD);//vai mandar o usario e senha se encontrar devolve os mesmos...
-			if(usuarioRetornado.getNome().equals(login) && usuarioRetornado.getSenha().equals(password)){
-				msg = "Login correto";
-			}else{
-				msg = "Login errado";
+			Login usuarioRetornado = userdao.getUserByLoginAndPassword(login, password);
+			if(usuarioRetornado == null) {
+				userdao.insertUser(login, password);
+				msg = "Usuario registrado com sucesso.";
+			} else {
+				msg = "Login existente";
 			}
 			hm.put("message", msg);
-			hm.put("usuario", String.valueOf(usuarioRetornado.getUsuario()));
-			hm.put("votou", String.valueOf(usuarioRetornado.getVotou()));
-			hm.put("token", String.valueOf(usuarioRetornado.getToken()));
-			hm.put("senha", usuarioRetornado.getSenha());
-			hm.put("nome", usuarioRetornado.getNome());
-			hm.put("filme", usuarioRetornado.getFilme());
-			hm.put("diretor", usuarioRetornado.getDiretor());
-			//Cada chave do HashMap vira uma chave do JSON
-			//JSONObject json = JSONObject.fromObject(hm);
 			JSONObject json = JSONObject.fromObject(hm);
 			response.setContentType("application/json");
 			PrintWriter out = response.getWriter();
@@ -70,4 +60,10 @@ public class UserValidator extends HttpServlet {
 		}
 	}
 
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }
+
 }
+

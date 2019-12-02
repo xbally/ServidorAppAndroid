@@ -26,4 +26,3 @@ private static final String[] dbConn = {"jdbc:postgresql://localhost:5432/teste"
 		}
 	}
 }
-

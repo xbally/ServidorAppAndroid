@@ -3,7 +3,8 @@ package com.ufpr.tads.bean;
 import java.io.Serializable;
 
 public class Login implements Serializable {
-	
+
+	private static final long serialVersionUID = 2710279873671045237L;
 	private int usuario;
 	private int votou;
 	private int token;
